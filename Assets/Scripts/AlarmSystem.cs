@@ -1,27 +1,17 @@
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.Events;
 
 public class AlarmSystem : MonoBehaviour
 {
-    [SerializeField] private Text _volumeReadout;
-    [SerializeField] private float _maxVolume = 100f;
-    [SerializeField] private float _volumeRateOfChange = 20f;
-
-    private float _currentVolume;
-    private float _targetVolume;
-
-    private void Update()
-    {
-        UpdateVolume();
-        UpdateReadout();
-    }
+    [SerializeField] private UnityEvent _onRogueEntered;
+    [SerializeField] private UnityEvent _onRogueExited;
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out Rogue _) == false)
             return;
 
-        _targetVolume = _maxVolume;
+        _onRogueEntered.Invoke();
     }
 
     private void OnTriggerExit(Collider other)
@@ -29,16 +19,6 @@ public class AlarmSystem : MonoBehaviour
         if (other.TryGetComponent(out Rogue _) == false)
             return;
 
-        _targetVolume = 0f;
-    }
-
-    private void UpdateVolume()
-    {
-        _currentVolume = Mathf.MoveTowards(_currentVolume, _targetVolume, _volumeRateOfChange * Time.deltaTime);
-    }
-
-    private void UpdateReadout()
-    {
-        _volumeReadout.text = "Alarm volume: " + _currentVolume.ToString("0.0");
+        _onRogueExited.Invoke();
     }
 }
