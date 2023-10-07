@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class AlarmSpeaker : MonoBehaviour
 {
@@ -9,26 +10,36 @@ public class AlarmSpeaker : MonoBehaviour
 
     private float _currentVolume;
     private float _targetVolume;
-
-    private void Update()
-    {
-        UpdateVolume();
-        UpdateReadout();
-    }
+    private bool _isUpdatingVolume;
 
     public void TurnOn()
     {
         _targetVolume = _maxVolume;
+        StartCoroutine(UpdateVolume());
     }
 
     public void TurnOff()
     {
-        _targetVolume = 0f; 
+        _targetVolume = 0f;
+        StartCoroutine(UpdateVolume());
     }
 
-    private void UpdateVolume()
+    private IEnumerator UpdateVolume()
     {
-        _currentVolume = Mathf.MoveTowards(_currentVolume, _targetVolume, _volumeRateOfChange * Time.deltaTime);
+        if (_isUpdatingVolume)
+            yield break;
+
+        _isUpdatingVolume = true;
+
+        while (Mathf.Approximately(_currentVolume, _targetVolume) == false)
+        {
+            _currentVolume = Mathf.MoveTowards(_currentVolume, _targetVolume, _volumeRateOfChange * Time.deltaTime);
+            UpdateReadout();
+
+            yield return null;
+        }
+
+        _isUpdatingVolume = false;
     }
 
     private void UpdateReadout()
